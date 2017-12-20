@@ -33,3 +33,33 @@ This software is distributed under the terms of the GPL, version 2 or later, exc
 2. Extract archive
 3. Copy or Move folder to `/usr/local/hmmer`
 4. Add binaries directory to your *Path*
+## dbCAN Installation
+1. `mkdir /usr/local/dbcan`
+2. Download [dbCAN](http://csbl.bmb.uga.edu/dbCAN/download.php)
+   - dbCAN-fam-HMMs.txt
+   - hmmscan-parser.sh
+3. Format HMM db 
+   - `hmmpress dbcan-fam-HMMs.txt`
+## ProtTest Installation
+1. Clone Repository `git clone`
+2. Move directory to `/usr/local/prottest3`
+## MUSCLE Installation
+1. Download [MUSCLE](http://www.drive5.com/muscle/downloads.htm)
+2. Copy `muscle` binary to location in the path like `/usr/local/bin`
+## FastTree Installation
+1. Install as per directions [Here](http://www.microbesonline.org/fasttree/#Install)
+## RAxML Installation
+1. Clone Repository `git clone`
+2. Follow Directions in `README` to create Executables
+3. Move executables to a location in the *Path*
+## Fasta_subsample.pl Installation
+1. Script is included with SACCHARIS
+2. Script was written by Timothy L. Bailey and William Noble
+3. Script is part of the [MEME Suite](http://web.mit.edu/meme_v4.11.4/share/doc/overview.html)
+# Modifications - HTML::TagParser
+- Tagparser.pm throws an error on line 236 - **Fix - Alter Line to**
+  - `bless $self, ref($package) || $package;`
+# Running SACCHARIS
+- In terminal follow Usage as given by
+  - `Saccharis.pl` ; or
+  - `Saccharis.pl -m`
