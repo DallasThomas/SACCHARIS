@@ -751,6 +751,8 @@ sub prottest {
 
 	if ($matrix eq 'WAG') {
 	  $rxm = $mod . "-wag";
+	} elsif ($matrix eq 'LG') {
+	  $rxm = $mod . "-lg";
 	} else {
 	  $rxm = $mod . "-jtt";
 	}
@@ -859,6 +861,8 @@ sub fasttree {
 
       if ( $model[1] eq 'wag' ) {
 	$cmd1 = "fasttree -wag -out $fast_tree $muscle; ";
+      } elsif ( $model[1] eq 'lg' ) {
+	$cmd1 = "fasttree -lg -out $fast_tree $muscle; ";
       } else {
 	$cmd1 = "fasttree -out $fast_tree $muscle; ";
       }
@@ -866,6 +870,8 @@ sub fasttree {
 
       if ( $model[1] eq 'wag' ) {
 	$cmd1 = "fasttree -wag -gamma -out $fast_tree $muscle; ";
+      } elsif ( $model[1] eq 'lg' ) {
+	$cmd1 = "fasttree -lg -gamma -out $fast_tree $muscle; ";
       } else {
 	$cmd1 = "fasttree -gamma -out $fast_tree $muscle; ";
       }
