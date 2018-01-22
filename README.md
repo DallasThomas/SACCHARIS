@@ -22,7 +22,7 @@ This software is distributed under the terms of the GPL, version 2 or later, exc
   - MUSCLE
   - ProtTest 3
   - RAxML
-  - FastTree (Requires version 2.2.10 or greater)
+  - FastTree (Requires version 2.1.10 or greater)
   - Fasta_subsample.pl
 # Installation
 1. Install all Requirements
