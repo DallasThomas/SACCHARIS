@@ -6,6 +6,10 @@ When using SACCHARIS please site the following paper:
 # License
 This software is distributed under the terms of the GPL, version 2 or later, excepting that:
 - The third party programs and scripts used by SACCHARIS are covered by the terms of their respective licenses
+# Additional Scripts
+With this package I have included a copy of:
+  - fasta_rmSmall.pl
+    - This script screens a fasta file and will remove sequence data where length of sequence is smaller than a user definined minimum length
 # Requirements
 - Perl Libraries
   - Bio::Seq, Bio::SeqIO
