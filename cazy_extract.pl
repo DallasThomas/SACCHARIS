@@ -126,7 +126,6 @@ foreach (@family) {
        #	       next;
        #      }
        ########################################################################################################
-
        if ($iterator == 501) {
  	       $iterator = 1;
  	       $arr_pos++;
@@ -239,7 +238,7 @@ sub query_pages {
 	  # Need to know how many sequences per page
 	  if ($key eq "href") {
 	     $value = $elem->getAttribute( $key );
-	     if ( ($value =~ m/[a-zA-Z_].*?\?debut_FUNC=(.*?)#pagination_FUNC/i) || ($value =~ m/[a-zA-Z_].*?\?debut_FUNC=(.*?)#pagination_PRINC/i) || ($value =~ m/[a-zA-Z_].*?\?debut_PRINC=(.*?)#pagination_PRINC/i) || ($value =~ m/[a-zA-Z_].*?\?debut_TAXO=(.*?)#pagination_TAXO/i)) {
+	     if ( $value =~ m/[a-zA-Z_].*?\?debut_[A-Z].*?=(.*?)#pagination_[A-Z].*?/i) { 
 		$num = $1;
 	     }
 	  }
@@ -253,6 +252,10 @@ sub query_pages {
 	  }
        }
     }
+
+print Dumper($num);
+print Dumper($count);
+exit;
 
     # Use the count to create the new pages and push onto array
     for (my $i = 1; $i < $count; $i++) {
