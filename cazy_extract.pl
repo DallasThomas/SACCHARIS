@@ -239,7 +239,7 @@ sub query_pages {
 	  # Need to know how many sequences per page
 	  if ($key eq "href") {
 	     $value = $elem->getAttribute( $key );
-	     if ( ($value =~ m/[a-zA-Z_].*?\?debut_FUNC=(.*?)#pagination_FUNC/i) || ($value =~ m/[a-zA-Z_].*?\?debut_FUNC=(.*?)#pagination_PRINC/i) || ($value =~ m/[a-zA-Z_].*?\?debut_PRINC=(.*?)#pagination_PRINC/i)) {
+	     if ( ($value =~ m/[a-zA-Z_].*?\?debut_FUNC=(.*?)#pagination_FUNC/i) || ($value =~ m/[a-zA-Z_].*?\?debut_FUNC=(.*?)#pagination_PRINC/i) || ($value =~ m/[a-zA-Z_].*?\?debut_PRINC=(.*?)#pagination_PRINC/i) || ($value =~ m/[a-zA-Z_].*?\?debut_TAXO=(.*?)#pagination_TAXO/i)) {
 		$num = $1;
 	     }
 	  }
