@@ -253,10 +253,6 @@ sub query_pages {
        }
     }
 
-print Dumper($num);
-print Dumper($count);
-exit;
-
     # Use the count to create the new pages and push onto array
     for (my $i = 1; $i < $count; $i++) {
         $newpage = $web . "?debut_FUNC=" . $i*$num . "#pagination_FUNC";
