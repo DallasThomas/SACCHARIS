@@ -126,14 +126,14 @@ foreach (@family) {
        #	       next;
        #      }
        ########################################################################################################
-       if ($iterator == 501) {
+       if ($iterator == 351) {
  	       $iterator = 1;
  	       $arr_pos++;
        }
 
        if ($iterator == 1) {
  	       $acc_list[$arr_pos] = $_ . ",";
-       } elsif ( ($iterator == 500) || ($list_size == $#cazy) ) {
+       } elsif ( ($iterator == 350) || ($list_size == $#cazy) ) {
  	       $acc_list[$arr_pos] = $acc_list[$arr_pos] . $_;
        } else {
  	       $acc_list[$arr_pos] = $acc_list[$arr_pos] . $_ . ",";
