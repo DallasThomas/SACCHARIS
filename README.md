@@ -63,6 +63,14 @@ With this package I have included a copy of:
 # Modifications - HTML::TagParser
 - Tagparser.pm throws an error on line 236 - **Fix - Alter Line to**
   - `bless $self, ref($package) || $package;`
+# NCBI Registration
+- NCBI E-Utilities Registration is Required for running of the cazy_extract.pl script
+  - Steps Involved
+     1. Send email to eutilities@ncbi.nlm.nih.gov that includes the desired values for email address and tool name
+        eg. tool = SaccharisTool, email = your.name@domain
+     2. Create and account on NCBI (https://www.ncbi.nlm.nih.gov/account/) in the Settings page create and API Key
+     3. Uncomment and Modify Lines 31-33 of cazy_extract.pl - use the information from steps 1 and 2 to modify the script
+- cazy_extract.pl will not run without this information
 # Running SACCHARIS
 - In terminal follow Usage as given by
   - `Saccharis.pl` ; or
