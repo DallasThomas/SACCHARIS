@@ -21,8 +21,24 @@ use strict;
 use Data::Dumper;
 use LWP::Simple;
 use HTML::TagParser;
+use Carp qw( croak );
 
 use File::Basename;
+
+# NCBI - User defined variables - These varibles must be defined
+my ($ncbi_api, $ncbi_name, $ncbi_email);
+
+$ncbi_api = 'cbcc378945be047286a9e6c0fbfd0b317808';
+$ncbi_name = 'Saccharis';
+$ncbi_email = 'dallas.thomas@agr.gc.ca';
+
+ncbi_error() if !defined $ncbi_api || !defined $ncbi_name || !defined $ncbi_email; 
+
+sub ncbi_error {
+   croak "NCBI values for api_key, tool name and email must be defined.\n";
+}
+
+exit;
 
 # Set-up for Arguments
 use Getopt::Long;
@@ -443,7 +459,7 @@ sub query_ncbi{
     my $id_list = shift;
 
     # Variable Declaration and Set-up
-    my ($esearch, $esearch_result, $efetch, $efetch_result);
+    my ($ebase, $esearch, $esearch_result, $efetch, $efetch_result);
     my ($web, $key, $count);
 
     # Set-up the Query URL
@@ -451,7 +467,10 @@ sub query_ncbi{
 
     # Set-up a search out to the eSearch program:
     #    - db is protein and search term is left blank for now <term>
-    $esearch = $utils . '/esearch.fcgi?db=protein&term=';
+    #$esearch = $utils . '/esearch.fcgi?db=protein&term=';
+    $ebase = $utils . '/esearch.fcgi?db=protein&email=' . $ncbi_email . '&tool='
+		. $ncbi_name . '&api_key=' . $ncbi_api;
+    $esearch = $ebase . '&term='; 
 
     # Submit the search to retrieve a count of total number of sequences
     $esearch_result = get( $esearch . $id_list );
@@ -461,7 +480,8 @@ sub query_ncbi{
     $esearch_result =~ m|.*<Count>(.*)</Count>.*|s;
     $count = $1;
 
-    $esearch = $utils . '/esearch.fcgi?db=protein&retmax=' . $count . '&term=';
+    #$esearch = $utils . '/esearch.fcgi?db=protein&retmax=' . $count . '&term=';
+    $esearch = $ebase . '&retmax=' . $count . '&term=';
     $esearch_result = get( $esearch . $id_list . '&usehistory=y' );
 
     # Extract the WebEnv and QueryKey
@@ -472,11 +492,14 @@ sub query_ncbi{
     $web = $1;
 
     # Fetch the Fasta data from NCBI using the esearch results
-    $efetch = $utils . '/efetch.fcgi?db=protein&query_key=' . $key . '&WebEnv='
-                 . $web . '&rettype=fasta&retmode=text';
+    #$efetch = $utils . '/efetch.fcgi?db=protein&query_key=' . $key . '&WebEnv='
+    #             . $web . '&rettype=fasta&retmode=text';
+    $ebase = $utils . '/efetch.fcgi?db=protein&email=' . $ncbi_email . '&tool='
+                . $ncbi_name . '&api_key=' . $ncbi_api;
+    $efetch = $ebase . '&query_key=' . $key . '&WebEnv=' . $web . '&rettype=fasta&retmode=text';
 
     $efetch_result = get( $efetch );
-
+    
     # Remove Spaces between each of the sequences
     $efetch_result =~ s/\n+/\n/g;
 
