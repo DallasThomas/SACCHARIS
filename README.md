@@ -63,7 +63,7 @@ With this package I have included a copy of:
 # Modifications - HTML::TagParser
 - Tagparser.pm throws an error on line 236 - **Fix - Alter Line to**
   - `bless $self, ref($package) || $package;`
-# NCBI Registration
+# NCBI Registration - cazy_extract.pl
 - NCBI E-Utilities Registration is Required for running of the cazy_extract.pl script
   - Steps Involved
      a. Send email to eutilities@ncbi.nlm.nih.gov that includes the desired values for email address and tool name
