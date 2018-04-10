@@ -70,7 +70,7 @@ With this package I have included a copy of:
         eg. tool = SaccharisTool, email = your.name@domain
      b. Create and account on NCBI (https://www.ncbi.nlm.nih.gov/account/) in the Settings page create and API Key
      c. Uncomment and Modify Lines 31-33 of cazy_extract.pl - use the information from steps 1 and 2 to modify the script
-**- cazy_extract.pl will not run without this information**
+- **cazy_extract.pl will not run without this information**
 # Running SACCHARIS
 - In terminal follow Usage as given by
   - `Saccharis.pl` ; or
