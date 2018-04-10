@@ -66,10 +66,10 @@ With this package I have included a copy of:
 # NCBI Registration - cazy_extract.pl
 - NCBI E-Utilities Registration is Required for running of the cazy_extract.pl script
   - Steps Involved
-     a. Send email to eutilities@ncbi.nlm.nih.gov that includes the desired values for email address and tool name
+  a. Send email to eutilities@ncbi.nlm.nih.gov that includes the desired values for email address and tool name
         eg. tool = SaccharisTool, email = your.name@domain
-     b. Create and account on NCBI (https://www.ncbi.nlm.nih.gov/account/) in the Settings page create and API Key
-     c. Uncomment and Modify Lines 31-33 of cazy_extract.pl - use the information from steps 1 and 2 to modify the script
+  b. Create and account on NCBI (https://www.ncbi.nlm.nih.gov/account/) in the Settings page create and API Key
+  c. Uncomment and Modify Lines 31-33 of cazy_extract.pl - use the information from steps 1 and 2 to modify the script
 - **cazy_extract.pl will not run without this information**
 # Running SACCHARIS
 - In terminal follow Usage as given by
