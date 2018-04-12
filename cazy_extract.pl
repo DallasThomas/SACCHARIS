@@ -240,6 +240,7 @@ sub query_pages {
     my $html = new HTML::TagParser->new( $web );
     my @clist = $html->getElementsByTagName( "span" );
     my @plist = $html->getElementsByTagName( "a" );
+    my $debut_val;
 
     # Determine how many pages there are from the source
     foreach my $elem ( @plist ) {
@@ -254,6 +255,7 @@ sub query_pages {
 	     $value = $elem->getAttribute( $key );
 	     if ( $value =~ m/[a-zA-Z_].*?\?debut_[A-Z].*?=(.*?)#pagination_[A-Z].*?/i) { 
 		$num = $1;
+		$debut_val = $1 if $value =~ m/[a-zA-Z_].*?\?debut_([A-Z]+)/i;
 	     }
 	  }
 
@@ -269,7 +271,7 @@ sub query_pages {
 
     # Use the count to create the new pages and push onto array
     for (my $i = 1; $i < $count; $i++) {
-        $newpage = $web . "?debut_FUNC=" . $i*$num . "#pagination_FUNC";
+        $newpage = $web . "?debut_" . $debut_val . "=" . $i*$num . "#pagination_" . $debut_val;
 	push(@array, $newpage);
 	$bigseq = 1;
     }
