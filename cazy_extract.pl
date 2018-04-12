@@ -38,8 +38,6 @@ sub ncbi_error {
    croak "NCBI values for api_key, tool name and email must be defined.\n";
 }
 
-exit;
-
 # Set-up for Arguments
 use Getopt::Long;
 use Pod::Usage;
