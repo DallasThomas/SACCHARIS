@@ -524,8 +524,8 @@ sub dbcan {
 
     ## Extract Sequences
     print "Extract Sequences that hit family: $fam\n";
-    my $tag = $fam . ".hmm";
-    $cmd1 = "grep $tag $dbcanfile > $fam.dbcan.final.txt; ";
+    my $tag = $fam;
+    $cmd1 = "grep $tag'[_0-9]*\.hmm' $dbcanfile > $fam.dbcan.final.txt; ";
     &run_cmd($cmd1, $cmd2);
     $cmd1 = "";
   
