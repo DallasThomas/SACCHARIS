@@ -3,6 +3,7 @@
 # Script Name: cazy_extract.pl
 # Created:     September 22, 2015
 # Modified     February 15, 2017
+#	       July 13, 2018
 #
 # Usage:       cazy_extract.pl [options]
 #
@@ -10,6 +11,12 @@
 #               queries www.cazy.org for either genbank ID's or Protein data
 #               ID's (determined by qualifier/group).  ID's are extracted
 #               and used to extract sequence results from either NCBI or PDB
+#
+# Mods:        An issue was found where some of the first listed PDB ID's
+#               did not link to a Fasta entry, therefore to deal with this
+#               need to hand structure extraction differently - will remove
+#               the structure portion from the regular extraction method and
+#               do everything in one step for each pdf entry from Cazy
 #
 # CPAN Lib:    Need to Install LWP::Simple and URI::Fetch
 #
@@ -28,11 +35,11 @@ use File::Basename;
 # NCBI - User defined variables - These varibles must be defined
 my ($ncbi_api, $ncbi_name, $ncbi_email);
 
-#$ncbi_api = '';
-#$ncbi_name = '';
-#$ncbi_email = '';
+$ncbi_api = '';
+$ncbi_name = '';
+$ncbi_email = '';
 
-ncbi_error() if !defined $ncbi_api || !defined $ncbi_name || !defined $ncbi_email; 
+ncbi_error() if !defined $ncbi_api || !defined $ncbi_name || !defined $ncbi_email;
 
 sub ncbi_error {
    croak "NCBI values for api_key, tool name and email must be defined.\n";
@@ -88,6 +95,9 @@ my ($FRAG, $DUP) = (0, 0);
 # Time to start looping and extracting what we want
 foreach (@family) {
 
+   ###############################################################################################
+   # Webpage URL & Sequence Count
+   ###############################################################################################
    # Create the webpage URL for Cazy
    my $f = uc $_;
    my $webpage = $webbase . $f . "_" . $opt_grp . ".html";
@@ -96,76 +106,95 @@ foreach (@family) {
    #  we need to determine the number of sequences and then proceed as such
    my @pages = &query_pages($webpage);
 
-   # Extract the ID list from Cazy Using the Webpage
-   &query_cazy($webpage);
-
-   # Extract ID list from array of other Cazy pages
-   if ($bigseq == 1) {
-      foreach (@pages) {
-        &query_cazy($_);
-      }
-   }
-
-   # Determine the total number of sequences
+   # Determine the total number of Sequences
    &get_seqcount($webpage);
 
-   # Seem to really only be able to extract 500 records at a time - so for the larger data samples
-   #  we need to split them into subsets
+
+   ###############################################################################################
+   # Sequence Extraction
+   ###############################################################################################
+
+   # Variable Declaration
    my (@results, @acc_list, $iterator);
    my ($arr_pos, $list_size) = (0, 0);
 
-   # Extraction of sequence data will either be from NCBI or PDB based on group
+   # Extraction from Query - Method will differ if user selected group is structure as extract from
+   #  PDB and not NCBI
    if ( $opt_grp eq 'structure' ) {
-     $iterator = 0;
 
-     foreach (@cazy) {
-       my $pdbstuff = &query_pdb($_);
-       push (@results, $pdbstuff);
-       $iterator++;
-     }
+      # Call Query Structure for main webpage
+      my $pdbstuff = &query_structure($webpage);
+      push (@results, $pdbstuff);
+
+      # If there are more than pages of structure call Query structure for each of these
+      if ($bigseq == 1) {
+	 foreach (@pages) {
+	   my $pdb_res = &query_structure($_);
+	   push (@results, $pdb_res);
+	 }
+      }
 
    } else {
-     $iterator = 1;
 
-     foreach (@cazy) {
-       ########################################################################################################
-       # Ran into a case where the Description in Cazy had a Number following description kind of like an
-       #  accession number that messed up the script - have tried two fixes, this commented one is the
-       #  second fix, where I screen these results out after they have been added to the array, the first
-       #  solution is found in &query_cazy, and prevents them from being added, using that method right now
-       #  and hoping it works for all cases
-       ########################################################################################################
-       #      # Need to make sure I actually have just accession numbers and nothing else
-       #      if ($_ !~ m/^([A-Z]{2,5}\d{2,7})[.]/ || $_ !~ m/^([A-Z]{2,5}\_\d{2,9})[.]/) {
-       #	       next;
-       #      }
-       ########################################################################################################
-       if ($iterator == 351) {
- 	       $iterator = 1;
- 	       $arr_pos++;
-       }
+      # Extract the ID list from Cazy Using the Webpage
+      &query_cazy($webpage);
 
-       if ($iterator == 1) {
- 	       $acc_list[$arr_pos] = $_ . ",";
-       } elsif ( ($iterator == 350) || ($list_size == $#cazy) ) {
- 	       $acc_list[$arr_pos] = $acc_list[$arr_pos] . $_;
-       } else {
- 	       $acc_list[$arr_pos] = $acc_list[$arr_pos] . $_ . ",";
-       }
-       $iterator++;
-       $list_size++;
-     }
+      # Extract ID list from array of other Cazy pages
+      if ($bigseq == 1) {
+         foreach (@pages) {
+           &query_cazy($_);
+         }
+      }
 
-     # Take this array of strings - that is the lists of 500 accension numbers and loop through array
-     #  querying ncbi and writing to outfile
-     $iterator = 0;
+      # Seem to really only be able to extract 500 records at a time - so for the larger data samples
+      #  we need to split them into subsets
 
-     foreach (@acc_list) {
-        my $ncbistuff = &query_ncbi($_);
-        push (@results, $ncbistuff);
+      $iterator = 1;
+
+      foreach (@cazy) {
+        ########################################################################################################
+        # Ran into a case where the Description in Cazy had a Number following description kind of like an
+        #  accession number that messed up the script - have tried two fixes, this commented one is the
+        #  second fix, where I screen these results out after they have been added to the array, the first
+        #  solution is found in &query_cazy, and prevents them from being added, using that method right now
+        #  and hoping it works for all cases
+        ########################################################################################################
+        #      # Need to make sure I actually have just accession numbers and nothing else
+        #      if ($_ !~ m/^([A-Z]{2,5}\d{2,7})[.]/ || $_ !~ m/^([A-Z]{2,5}\_\d{2,9})[.]/) {
+        #	       next;
+        #      }
+        ########################################################################################################
+        if ($iterator == 351) {
+ 	        $iterator = 1;
+ 	        $arr_pos++;
+        }
+
+        if ($iterator == 1) {
+ 	        $acc_list[$arr_pos] = $_ . ",";
+        } elsif ( ($iterator == 350) || ($list_size == $#cazy) ) {
+ 	        $acc_list[$arr_pos] = $acc_list[$arr_pos] . $_;
+        } else {
+ 	        $acc_list[$arr_pos] = $acc_list[$arr_pos] . $_ . ",";
+        }
         $iterator++;
-     }
-   }
+        $list_size++;
+      }
+
+      # Take this array of strings - that is the lists of 500 accension numbers and loop through array
+      #  querying ncbi and writing to outfile
+      $iterator = 0;
+
+      foreach (@acc_list) {
+         my $ncbistuff = &query_ncbi($_);
+         push (@results, $ncbistuff);
+         $iterator++;
+      }
+    }
+
+
+   ###############################################################################################
+   # Print Results
+   ###############################################################################################
 
    # The last step is to print the results to file, and modify the header of the sequences in the file
    my $outfile = $_ . '_cazy.fasta';
@@ -253,7 +282,7 @@ sub query_pages {
 	  # Need to know how many sequences per page
 	  if ($key eq "href") {
 	     $value = $elem->getAttribute( $key );
-	     if ( $value =~ m/[a-zA-Z_].*?\?debut_[A-Z].*?=(.*?)#pagination_[A-Z].*?/i) { 
+	     if ( $value =~ m/[a-zA-Z_].*?\?debut_[A-Z].*?=(.*?)#pagination_[A-Z].*?/i) {
 		$num = $1;
 		$debut_val = $1 if $value =~ m/[a-zA-Z_].*?\?debut_([A-Z]+)/i;
 	     }
@@ -336,11 +365,15 @@ sub query_cazy {
     # Passed in Variables
     my $web = shift;
 
+#print Dumper($web);
+
     # Variable Declaration and Retrieval from Website
     my $html = new HTML::TagParser->new( $web );
     my @list = $html->getElementsByTagName( "td" );
     my $fragment = 0;
     my %testhash;
+
+#print Dumper(@list);
 
     # Parse HTML Data
     foreach my $elem ( @list ) {
@@ -356,92 +389,40 @@ sub query_cazy {
              $FRAG++;
           }
 
-          # ID's are extracted differently if the group is structure as we are extracting PDB ID's
-          #  verses accession numbers
-          if ($opt_grp eq 'structure') {
+          # If the sequence is a fragment skip over or else add to list
+          ########################################################################################################
+          # To deal with cases, where accession like numbers are found in the organism name, I need to make sure I
+          #  ignore these or the program crashes as I am adding descriptions to my array.  A second fix I
+          #  implemented for this has been commented out above.  Here I have replaced the conditional commented
+          #  out below, with a similar conditional, the difference is it is looking for text that starts with
+          #  the Accession Number - this will remain good as long as there are no other organism names or protein
+          #  name that start with a simiar pattern.  If so we might need to look at implementing the solution
+          #  above
+          ########################################################################################################
+          #
+          #  if ( ( $key eq 'id' ) && ( $text =~ m/.*?([A-Z]{2,5}\d{2,7})[.]/ || $text =~ m/.*?([A-Z]{2,5}\_\d{2,9})[.]/ ) && !( $text =~ m/&nbsp/ ) )
+          #
+          ########################################################################################################
 
-             
-	     # If the sequence is a fragment skip over else, add to list - PDB IDs are 4 Character ID with first character a digit
-             #  followed by three alphanumeric characters
-             if ( ( $key eq 'id' ) && ( $text =~ m/^[1-9][0-9a-zA-z]{3}\[.*/ ) && !( $text =~ m/&nbsp/ ) ) {
-               if ( ( $text =~ m/^[1-9][0-9a-zA-z]{3}\[.*\]$/ ) && ( $fragment == 0 ) ) {
-                 @text = split(/(\[.*?\])/, $text);
-                 # Test for duplicate accession numbers
-                 $DUP++ if exists $testhash{$text[0]};
-                 next if exists $testhash{$text[0]};
-                 # If does not exist - set accession number to array and set value to hash
-                 push(@cazy,$text[0]);
-                 $testhash{$text[0]} = 1;
-               } elsif ( ( $text =~ m/.*?\[.*?\][1-9]/ ) && ( $fragment == 0 ) ) {
-                 @text = split(/(\[.*?\])/, $text);
-                 # Test for duplicate accession numbers
-                 $DUP++ if exists $testhash{$text[0]};
-                 next if exists $testhash{$text[0]};
-                 # If does not exist - set accession number to array and set value to hash
-                 push(@cazy,$text[0]);
-                 $testhash{$text[0]} = 1;
-               } elsif ( $fragment == 0 ) {
-                 # Extract ID or IDs from this selection
-                 @text = split(/(\s+)/, $text);
-                 my $tc = 0;
-                 foreach (@text) {
-                   if ( $_ =~ m/^[1-9][0-9a-zA-z]{3}\[.*\]/ ) {
-                     my @tt = split(/(\[.*?\])/, $_);
-                     # Test for duplicate accession numbers
-                     $DUP++ if exists $testhash{$tt[0]};
-                     next if exists $testhash{$tt[0]};
-                     # If does not exist - set accession number to array and set value to hash
-                     if ( $tc == 0 ) {
-                       push(@cazy,$tt[0]);
-                       $testhash{$tt[0]} = 1;
-                       $tc++;
-                     } else {
-                       $testhash{$tt[0]} = 1;
-                     }
-                   }
-                 }
-               } else {
-                 $fragment = 0;
-               }
-             }
-
-          } else {
-
-             # If the sequence is a fragment skip over or else add to list
-             ########################################################################################################
-             # To deal with cases, where accession like numbers are found in the organism name, I need to make sure I
-             #  ignore these or the program crashes as I am adding descriptions to my array.  A second fix I
-             #  implemented for this has been commented out above.  Here I have replaced the conditional commented
-             #  out below, with a similar conditional, the difference is it is looking for text that starts with
-             #  the Accession Number - this will remain good as long as there are no other organism names or protein
-             #  name that start with a simiar pattern.  If so we might need to look at implementing the solution
-             #  above
-             ########################################################################################################
-             #
-             #	   if ( ( $key eq 'id' ) && ( $text =~ m/.*?([A-Z]{2,5}\d{2,7})[.]/ || $text =~ m/.*?([A-Z]{2,5}\_\d{2,9})[.]/ ) && !( $text =~ m/&nbsp/ ) )
-             #
-             ########################################################################################################
-
-             if ( ( $key eq 'id' ) && ( $text =~ m/^([A-Z]{2,5}\d{2,7})[.]/ || $text =~ m/^([A-Z]{2,5}\_\d{2,9})[.]/ ) && !( $text =~ m/&nbsp/ ) ) {
-                if ( ( $text =~ m/.*?[.]\d{1,2}[A-Z0-9]/ ) && ( $fragment == 0 ) ) {
-                   @text = split(/([.]\d{1})/, $text);
-                   my $t1 = $text[0] . $text[1];
-                   # Test for duplicate accession numbers
-                   $DUP++ if exists $testhash{$t1};
-                   next if exists $testhash{$t1};
-                   # If does not exist - set accession number to array and set value to hash
-                   push(@cazy,$t1);
-                   $testhash{$t1} = 1;
-                } elsif ( $fragment == 0 ) {
-                   # Test for duplicate accession numbers
-                   $DUP++ if exists $testhash{$text};
-                   next if exists $testhash{$text};
-                   # If does not exist - set accession number to array and set value to hash
-                   push(@cazy,$text);
-                   $testhash{$text} = 1;
-                } else {
-                   $fragment = 0;
-                }
+          if ( ( $key eq 'id' ) && ( $text =~ m/^([A-Z]{2,5}\d{2,7})[.]/ || $text =~ m/^([A-Z]{2,5}\_\d{2,9})[.]/ ) && !( $text =~ m/&nbsp/ ) ) {
+             if ( ( $text =~ m/.*?[.]\d{1,2}[A-Z0-9]/ ) && ( $fragment == 0 ) ) {
+                @text = split(/([.]\d{1})/, $text);
+                my $t1 = $text[0] . $text[1];
+                # Test for duplicate accession numbers
+                $DUP++ if exists $testhash{$t1};
+                next if exists $testhash{$t1};
+                # If does not exist - set accession number to array and set value to hash
+                push(@cazy,$t1);
+                $testhash{$t1} = 1;
+             } elsif ( $fragment == 0 ) {
+                # Test for duplicate accession numbers
+                $DUP++ if exists $testhash{$text};
+                next if exists $testhash{$text};
+                # If does not exist - set accession number to array and set value to hash
+                push(@cazy,$text);
+                $testhash{$text} = 1;
+             } else {
+                $fragment = 0;
              }
           }
         }
@@ -470,7 +451,7 @@ sub query_ncbi{
     #$esearch = $utils . '/esearch.fcgi?db=protein&term=';
     $ebase = $utils . '/esearch.fcgi?db=protein&email=' . $ncbi_email . '&tool='
 		. $ncbi_name . '&api_key=' . $ncbi_api;
-    $esearch = $ebase . '&term='; 
+    $esearch = $ebase . '&term=';
 
     # Submit the search to retrieve a count of total number of sequences
     $esearch_result = get( $esearch . $id_list );
@@ -499,37 +480,152 @@ sub query_ncbi{
     $efetch = $ebase . '&query_key=' . $key . '&WebEnv=' . $web . '&rettype=fasta&retmode=text';
 
     $efetch_result = get( $efetch );
-    
+
     # Remove Spaces between each of the sequences
     $efetch_result =~ s/\n+/\n/g;
+
+#print "/n/nAcc List Seq's\n\n";
+#print Dumper($efetch_result);
 
     return $efetch_result;
 }
 
 ################################################################################
-# This subroutine - uses the PDB Id List from cazy to extract
-#  the fasta information from PDB
+# This subroutine - uses the supplied webpage to get the PDB entry and use that
+#  PDB Id from cazy to extract the fasta information from PDB
+################################################################################
+sub query_structure{
+
+    # Passed in Variables
+    my $web = shift;
+
+    # Variable Declaration and Retrieval from Website
+    my $html = new HTML::TagParser->new( $web );
+    my @list = $html->getElementsByTagName( "td" );
+    my $fragment = 0;
+    my %testhash;
+    my ($pdb_fasta, @seqs);
+
+    # Parse HTML Data
+    foreach my $elem ( @list ) {
+        my $attr = $elem->attributes;
+        my $text = $elem->innerText;
+        my @text;
+
+        foreach my $key ( sort keys %$attr ) {
+
+          # First identify if the following sequence is a fragment from Protein Name
+          if ( ( $key eq 'id' ) && ( $text =~ /fragment/ ) && ( $remove_fragments eq 'true' ) ) {
+             $fragment = 1;
+             $FRAG++;
+          }
+
+          # Extracting PDB ID's then use to extract fasta
+	  # If the sequence is a fragment skip over else, add to list - PDB IDs are 4 Character ID with first character a digit
+          #  followed by three alphanumeric characters
+          if ( ( $key eq 'id' ) && ( $text =~ m/^[1-9][0-9a-zA-z]{3}\[.*/ ) && !( $text =~ m/&nbsp/ ) ) {
+            if ( ( $text =~ m/^[1-9][0-9a-zA-z]{3}\[.*\]$/ ) && ( $fragment == 0 ) ) {
+              @text = split(/(\[.*?\])/, $text);
+
+              # Test for duplicate accession numbers
+              $DUP++ if exists $testhash{$text[0]};
+              next if exists $testhash{$text[0]};
+
+              # If does not exist - Query PDB with ID - If fasta extracted add to string else next
+	      $pdb_fasta = &query_pdb($text[0]);
+              if ($pdb_fasta eq '1') {
+	         next;
+	      } else {
+	         push(@seqs,$pdb_fasta);
+                 $testhash{$text[0]} = 1;
+              }
+
+            } elsif ( ( $text =~ m/.*?\[.*?\][1-9]/ ) && ( $fragment == 0 ) ) {
+              @text = split(/(\[.*?\])/, $text);
+
+              # Test for duplicate accession numbers
+              $DUP++ if exists $testhash{$text[0]};
+              next if exists $testhash{$text[0]};
+
+              # If does not exist - Query PDB with ID - If fasta extracted add to string else next
+              $pdb_fasta = &query_pdb($text[0]);
+              if ($pdb_fasta eq '1') {
+                 next;
+              } else {
+                 push(@seqs,$pdb_fasta);
+                 $testhash{$text[0]} = 1;
+              }
+
+            } elsif ( $fragment == 0 ) {
+              # Extract ID or IDs from this selection
+              @text = split(/(\s+)/, $text);
+              my $tc = 0;
+
+              foreach (@text) {
+                if ( $_ =~ m/^[1-9][0-9a-zA-z]{3}\[.*\]/ ) {
+                  my @tt = split(/(\[.*?\])/, $_);
+
+                  # Test for duplicate accession numbers
+                  $DUP++ if exists $testhash{$tt[0]};
+                  next if exists $testhash{$tt[0]};
+
+                  # If does not exist - Query PDB with ID - If fasta extracted add to string else next
+		  $pdb_fasta = &query_pdb($tt[0]);
+                  if ( $tc == 0 ) {
+	            if ($pdb_fasta eq '1') {
+                      next;
+                    } else {
+                      push(@seqs,$pdb_fasta);
+                      $testhash{$tt[0]} = 1;
+		      $tc++;
+                    }
+                  } else {
+                    $testhash{$tt[0]} = 1;
+                  }
+                }
+              }
+            } else {
+              $fragment = 0;
+            }
+	  }
+	}
+    }
+
+    # Need to split array into a string separated with Newlines
+    my $struct_seqs = join ( '\n', @seqs);
+
+    return $struct_seqs;
+}
+
+
+################################################################################
+# This subroutine - uses the past in PDB ID to extract fasta information from
+#  the Protein Data Bank
 ################################################################################
 sub query_pdb{
 
     # Passed in Variables
-    my $id_list = shift;
+    my $id = shift;
 
     # Variable Declaration and Set-up
     my ($pdb, @pdb, $pdb_result);
 
-    # Set-up the Query URL
+    # Set-up the Protein Data Bank Query URL
     my $utils = 'http://www.rcsb.org/pdb/download/viewFastaFiles.do?structureIdList=';
     my $tail = "&compressionType=uncompressed";
 
-#print $utils . $id_list, "\n"; exit;
-
     # Grab fasta information with URL and id_list
-    $pdb = get( $utils . $id_list . $tail );
-    @pdb = split( />/, $pdb );
+    $pdb = get( $utils . $id . $tail );
 
-    # We just need the top sequence
-    $pdb_result = '>' . $pdb[1];
+    # Verify that a fasta sequence was output
+    if ( $pdb =~ m/^\>[1-9A-Za-z]*.?/ ) {
+       @pdb = split( />/, $pdb );
+
+       # We just need the top sequence
+       $pdb_result = '>' . $pdb[1];
+    } else {
+       $pdb_result = '1';
+    }
 
     return $pdb_result;
 }
