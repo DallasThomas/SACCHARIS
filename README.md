@@ -28,6 +28,10 @@ With this package I have included a copy of:
   - RAxML
   - FastTree (Requires version 2.1.10 or greater)
   - Fasta_subsample.pl
+- Notices
+  - If you experience an error pertaining to an uninitialized $esearch value, confirm you have the following packages installed
+    -  libwww-perl (linux)
+    -  LWP::Protocol::https (OSX)
 # Installation
 1. Install all Requirements
 2. Clone Repository `git clone`
