@@ -43,7 +43,7 @@ With this package I have included a copy of:
 4. Add binaries directory to your *Path*
 ## dbCAN Installation
 1. `mkdir /usr/local/dbcan`
-2. Download [dbCAN](http://csbl.bmb.uga.edu/dbCAN/download.php)
+2. Download [dbCAN](http://cys.bios.niu.edu/dbCAN/download/)
    - dbCAN-fam-HMMs.txt
    - hmmscan-parser.sh
 3. Format HMM db 
