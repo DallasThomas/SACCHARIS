@@ -101,7 +101,11 @@ print "\t - Threads: \t" . $threads . "\n";
 print "\t - HomeDir: \t" . $home . "\n";
 my $uf = $userfile ? $userfile : "...";
 print "\t - UserFile: \t" . $uf . "\n";
-print "\t - RaxML: \t" . $rax . "\n";
+if ( defined $opt_RAX ) {
+   print "\t - RaxML: \t" . $rax . "\n";
+} else {
+   print "\t - Tree Generation: \tFastTree\n";
+}
 if ( defined $opt_frag ) { 
    print "\t - Fragments are included...\n";
 } else {
@@ -249,6 +253,10 @@ foreach my $i (@group) {
   print "Completed dbCAN Processing\n\n";
   print "==============================================================================\n\n";
 
+  # Set NumberSeq count to pruned sequences
+  $NumberSeqs = `grep -c ^\\> $dbcan_file`;
+  print "Pruned Sequence Count --> \t$NumberSeqs\n\n";
+
   # Run Third Benchmark
   my $t_dbcan = Benchmark->new;
   $td = timediff($t_dbcan, $t_merge);
@@ -277,14 +285,13 @@ foreach my $i (@group) {
   print "*      --> ", timestr($td), " to run\n";
   print "*********************************************\n";
 
- 
   #######################################
   # Step Five - Prottest3
   #######################################
 
   # Prottest does not like phylip files with headers greater than 10
   print "Prottest3 tree modeling of $prot_muscle is underway\n";
-  my $TreeModel = &prottest($prot_muscle, $cazy_file, $opt_fam, $grp_dir, $threads, $MFast);
+  my $TreeModel = &prottest($prot_muscle, $cazy_file, $dbcan_file, $opt_fam, $grp_dir, $threads, $MFast);
   print "Best model found via Prottest\n\n";
   print "==============================================================================\n\n";
 
@@ -642,7 +649,7 @@ sub muscle {
 sub prottest {
 
   # Get passed in Variables
-  my ($muscle, $cazy, $fam, $dir, $thr, $MF) = @_;
+  my ($muscle, $cazy, $dbcan, $fam, $dir, $thr, $MF) = @_;
 
   # Variable Declaration
   my ($cmd1, $cmd2) = ("", "");
@@ -676,7 +683,8 @@ sub prottest {
       $muscle = $local . "/subsample/muscle/" . $fam . ".muscle_aln.phyi";
     } else {
       if ($NumberSeqs >= 4000) {
-        $muscle = &subsample($cazy, $fam, $local, $thr, $MF);
+      	# Must use the dbcan pruned file as if large user dataset could grab seqs that will get pruned
+        $muscle = &subsample($dbcan, $fam, $local, $thr, $MF);
       }
     }
 
@@ -891,7 +899,7 @@ sub fasttree {
 sub subsample {
 
   # Passed in Variables
-  my ($cazyfile, $fam, $dir, $threads, $mf) = @_;
+  my ($pfile, $fam, $dir, $threads, $mf) = @_;
 
   # Variable Declaration
   my ($cmd1, $cmd2) = ("", ""); 
@@ -911,7 +919,7 @@ sub subsample {
   # Extract the Subsample of Sequences - uses a script from MIT
   print "Extracting subsample...\n\n";
   my $cazy_file = $fam . "_subsample.fasta";
-  $cmd1 = "fasta_subsample.pl $cazyfile 1500 -seed 7 > $cazy_file; ";
+  $cmd1 = "fasta_subsample.pl $pfile 1500 -seed 7 > $cazy_file; ";
   &run_cmd($cmd1, $cmd2);
 
   $cazy_file = $local . "/" . $cazy_file;
