@@ -532,10 +532,13 @@ sub dbcan {
     ## Extract Sequences
     print "Extract Sequences that hit family: $fam\n";
     my $tag = $fam;
-    $cmd1 = "grep $tag'[_0-9]*\.hmm' $dbcanfile > $fam.dbcan.final.txt; ";
+    #$cmd1 = "grep '$tag'\.hmm'\|$tag'\_[0-9]*\.hmm'' $dbcanfile > $fam.dbcan.final.txt; ";
+    $cmd1 = "grep $tag'\.hmm' $dbcanfile >> $fam.dbcan.final.txt; ";
+    $cmd2 = "grep $tag'\_[0-9]*\.hmm' $dbcanfile >> $fam.dbcan.final.txt; ";
     &run_cmd($cmd1, $cmd2);
     $cmd1 = "";
-  
+    $cmd2 = "";
+
     $cmd1 = "awk -F\" \" '{print \$3}' $fam.dbcan.final.txt > $fam.dbcan.final.seqlist; ";
     &run_cmd($cmd1, $cmd2);
     $cmd1 = "";
