@@ -75,6 +75,9 @@ With this package I have included a copy of:
     - Create and account on NCBI (https://www.ncbi.nlm.nih.gov/account/) in the Settings page create and API Key
     - Uncomment and Modify Lines 31-33 of cazy_extract.pl - use the information from steps 1 and 2 to modify the script
 - **cazy_extract.pl will not run without this information**
+# Modify User Data Headers
+- Run the following in a terminal window with <insert_here> replaced with your base file name 
+  - `perl -pe 's/\>/$& . U . sprintf("%08d", ++$n) . " "/ge' <insert_here>.fasta > <insert_here>_mod.fasta`
 # Running SACCHARIS
 - In terminal follow Usage as given by
   - `Saccharis.pl` ; or
