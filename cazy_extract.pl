@@ -199,6 +199,7 @@ foreach (@family) {
    # The last step is to print the results to file, and modify the header of the sequences in the file
    my $outfile = $_ . '_cazy.fasta';
    open (OUT, ">$outfile") or die "Can't open $outfile:$!\n";
+   binmode OUT, ":encoding(UTF-8)";
 
    # Need to split the ncbi data in each string array to another array form processing
    my @final_results;
@@ -379,7 +380,7 @@ sub query_cazy {
     foreach my $elem ( @list ) {
         my $attr = $elem->attributes;
         my $text = $elem->innerText;
-        my @text;
+        my ( @text, $t1 );
 
         foreach my $key ( sort keys %$attr ) {
 
@@ -407,7 +408,12 @@ sub query_cazy {
           if ( ( $key eq 'id' ) && ( $text =~ m/^([A-Z]{2,5}\d{2,7})[.]/ || $text =~ m/^([A-Z]{2,5}\_\d{2,9})[.]/ ) && !( $text =~ m/&nbsp/ ) ) {
              if ( ( $text =~ m/.*?[.]\d{1,2}[A-Z0-9]/ ) && ( $fragment == 0 ) ) {
                 @text = split(/([.]\d{1})/, $text);
-                my $t1 = $text[0] . $text[1];
+		if ( $text[1] =~ /\.$/ ) {
+                   $t1 = $text[0];
+                } else {
+                   $t1 = $text[0] . $text[1];
+                }
+		
                 # Test for duplicate accession numbers
                 $DUP++ if exists $testhash{$t1};
                 next if exists $testhash{$t1};
@@ -415,12 +421,19 @@ sub query_cazy {
                 push(@cazy,$t1);
                 $testhash{$t1} = 1;
              } elsif ( $fragment == 0 ) {
-                # Test for duplicate accession numbers
-                $DUP++ if exists $testhash{$text};
-                next if exists $testhash{$text};
+		if ( $text =~ m/\.$/ ) {
+                   @text = split(/\./, $text);
+                   $t1 = $text[0];
+                } else {
+                   $t1 = $text;
+                }
+
+		# Test for duplicate accession numbers
+                $DUP++ if exists $testhash{$t1};
+                next if exists $testhash{$t1};
                 # If does not exist - set accession number to array and set value to hash
-                push(@cazy,$text);
-                $testhash{$text} = 1;
+                push(@cazy,$t1);
+                $testhash{$t1} = 1;
              } else {
                 $fragment = 0;
              }
