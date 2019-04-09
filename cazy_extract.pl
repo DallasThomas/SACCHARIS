@@ -12,7 +12,7 @@
 #               ID's (determined by qualifier/group).  ID's are extracted
 #               and used to extract sequence results from either NCBI or PDB
 #
-# Mods:        An issue was found where some of the first listed PDB ID's
+# Mods:        An issue was found where some of the first listed PDB ID's 
 #               did not link to a Fasta entry, therefore to deal with this
 #               need to hand structure extraction differently - will remove
 #               the structure portion from the regular extraction method and
@@ -35,11 +35,11 @@ use File::Basename;
 # NCBI - User defined variables - These varibles must be defined
 my ($ncbi_api, $ncbi_name, $ncbi_email);
 
-$ncbi_api = '';
-$ncbi_name = '';
-$ncbi_email = '';
+$ncbi_api = 'cbcc378945be047286a9e6c0fbfd0b317808';
+$ncbi_name = 'Saccharis';
+$ncbi_email = 'dallas.thomas@agr.gc.ca';
 
-ncbi_error() if !defined $ncbi_api || !defined $ncbi_name || !defined $ncbi_email;
+ncbi_error() if !defined $ncbi_api || !defined $ncbi_name || !defined $ncbi_email; 
 
 sub ncbi_error {
    croak "NCBI values for api_key, tool name and email must be defined.\n";
@@ -119,7 +119,7 @@ foreach (@family) {
    my ($arr_pos, $list_size) = (0, 0);
 
    # Extraction from Query - Method will differ if user selected group is structure as extract from
-   #  PDB and not NCBI
+   #  PDB and not NCBI 
    if ( $opt_grp eq 'structure' ) {
 
       # Call Query Structure for main webpage
@@ -128,13 +128,13 @@ foreach (@family) {
 
       # If there are more than pages of structure call Query structure for each of these
       if ($bigseq == 1) {
-	 foreach (@pages) {
-	   my $pdb_res = &query_structure($_);
+	 foreach (@pages) { 
+	   my $pdb_res = &query_structure($_); 
 	   push (@results, $pdb_res);
 	 }
       }
 
-   } else {
+   } else { 
 
       # Extract the ID list from Cazy Using the Webpage
       &query_cazy($webpage);
@@ -184,6 +184,8 @@ foreach (@family) {
       #  querying ncbi and writing to outfile
       $iterator = 0;
 
+#print Dumper(@acc_list); exit;
+
       foreach (@acc_list) {
          my $ncbistuff = &query_ncbi($_);
          push (@results, $ncbistuff);
@@ -191,6 +193,7 @@ foreach (@family) {
       }
     }
 
+#exit;
 
    ###############################################################################################
    # Print Results
@@ -199,7 +202,7 @@ foreach (@family) {
    # The last step is to print the results to file, and modify the header of the sequences in the file
    my $outfile = $_ . '_cazy.fasta';
    open (OUT, ">$outfile") or die "Can't open $outfile:$!\n";
-   binmode OUT, ":encoding(UTF-8)";
+   binmode OUT, ":encoding(UTF-8)";  
 
    # Need to split the ncbi data in each string array to another array form processing
    my @final_results;
@@ -225,6 +228,8 @@ foreach (@family) {
      }
 
    } else {
+
+#print Dumper(@final_results); exit;
 
      foreach (@final_results) {
         my (@l, @v, $newline);
@@ -283,9 +288,9 @@ sub query_pages {
 	  # Need to know how many sequences per page
 	  if ($key eq "href") {
 	     $value = $elem->getAttribute( $key );
-	     if ( $value =~ m/[a-zA-Z_].*?\?debut_[A-Z].*?=(.*?)#pagination_[A-Z].*?/i) {
+	     if ( $value =~ m/[a-zA-Z_].*?\?debut_[A-Z].*?=(.*?)#pagination_[A-Z].*?/i) { 
 		$num = $1;
-		$debut_val = $1 if $value =~ m/[a-zA-Z_].*?\?debut_([A-Z]+)/i;
+		$debut_val = $1 if $value =~ m/[a-zA-Z_].*?\?debut_([A-Z]+)/i;		
 	     }
 	  }
 
@@ -408,12 +413,12 @@ sub query_cazy {
           if ( ( $key eq 'id' ) && ( $text =~ m/^([A-Z]{2,5}\d{2,7})[.]/ || $text =~ m/^([A-Z]{2,5}\_\d{2,9})[.]/ ) && !( $text =~ m/&nbsp/ ) ) {
              if ( ( $text =~ m/.*?[.]\d{1,2}[A-Z0-9]/ ) && ( $fragment == 0 ) ) {
                 @text = split(/([.]\d{1})/, $text);
-		if ( $text[1] =~ /\.$/ ) {
-                   $t1 = $text[0];
-                } else {
-                   $t1 = $text[0] . $text[1];
-                }
-		
+		if ( $text[1] =~ m/\.$/ ) {
+		   $t1 = $text[0];
+		} else {
+		   $t1 = $text[0] . $text[1];
+		}
+
                 # Test for duplicate accession numbers
                 $DUP++ if exists $testhash{$t1};
                 next if exists $testhash{$t1};
@@ -421,14 +426,14 @@ sub query_cazy {
                 push(@cazy,$t1);
                 $testhash{$t1} = 1;
              } elsif ( $fragment == 0 ) {
-		if ( $text =~ m/\.$/ ) {
+                if ( $text =~ m/\.$/ ) {
                    @text = split(/\./, $text);
                    $t1 = $text[0];
                 } else {
                    $t1 = $text;
                 }
 
-		# Test for duplicate accession numbers
+                # Test for duplicate accession numbers
                 $DUP++ if exists $testhash{$t1};
                 next if exists $testhash{$t1};
                 # If does not exist - set accession number to array and set value to hash
@@ -464,7 +469,7 @@ sub query_ncbi{
     #$esearch = $utils . '/esearch.fcgi?db=protein&term=';
     $ebase = $utils . '/esearch.fcgi?db=protein&email=' . $ncbi_email . '&tool='
 		. $ncbi_name . '&api_key=' . $ncbi_api;
-    $esearch = $ebase . '&term=';
+    $esearch = $ebase . '&term='; 
 
     # Submit the search to retrieve a count of total number of sequences
     $esearch_result = get( $esearch . $id_list );
@@ -493,12 +498,9 @@ sub query_ncbi{
     $efetch = $ebase . '&query_key=' . $key . '&WebEnv=' . $web . '&rettype=fasta&retmode=text';
 
     $efetch_result = get( $efetch );
-
+    
     # Remove Spaces between each of the sequences
     $efetch_result =~ s/\n+/\n/g;
-
-#print "/n/nAcc List Seq's\n\n";
-#print Dumper($efetch_result);
 
     return $efetch_result;
 }
@@ -588,7 +590,7 @@ sub query_structure{
 	            if ($pdb_fasta eq '1') {
                       next;
                     } else {
-                      push(@seqs,$pdb_fasta);
+                      push(@seqs,$pdb_fasta); 
                       $testhash{$tt[0]} = 1;
 		      $tc++;
                     }
@@ -605,7 +607,7 @@ sub query_structure{
     }
 
     # Need to split array into a string separated with Newlines
-    my $struct_seqs = join ( '\n', @seqs);
+    my $struct_seqs = join ( '\n', @seqs); 
 
     return $struct_seqs;
 }
@@ -637,8 +639,8 @@ sub query_pdb{
        # We just need the top sequence
        $pdb_result = '>' . $pdb[1];
     } else {
-       $pdb_result = '1';
-    }
+       $pdb_result = '1'; 
+    } 
 
     return $pdb_result;
 }
