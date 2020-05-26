@@ -88,6 +88,7 @@ if (($remove_fragments ne 'true') && ($remove_fragments ne 'false')) {
 # Set default variables
 my $webbase = 'http://www.cazy.org/';
 my @cazy;
+my %testhash;
 my $bigseq = 0;
 my $SEQCOUNT = 0;
 my ($FRAG, $DUP) = (0, 0);
@@ -377,7 +378,6 @@ sub query_cazy {
     my $html = new HTML::TagParser->new( $web );
     my @list = $html->getElementsByTagName( "td" );
     my $fragment = 0;
-    my %testhash;
 
 #print Dumper(@list);
 
