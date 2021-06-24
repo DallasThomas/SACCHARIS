@@ -35,9 +35,10 @@ use File::Basename;
 # NCBI - User defined variables - These varibles must be defined
 my ($ncbi_api, $ncbi_name, $ncbi_email);
 
-$ncbi_api = 'cbcc378945be047286a9e6c0fbfd0b317808';
-$ncbi_name = 'Saccharis';
-$ncbi_email = 'dallas.thomas@agr.gc.ca';
+# User Must register for their own api id, etc to fill in these fields
+$ncbi_api = '';
+$ncbi_name = '';
+$ncbi_email = '';
 
 ncbi_error() if !defined $ncbi_api || !defined $ncbi_name || !defined $ncbi_email; 
 
