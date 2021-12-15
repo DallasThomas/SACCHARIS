@@ -503,10 +503,11 @@ sub dbcan {
 
     # Need to create symbolic links 
     print "Creating Symbolic links to dbcan files for running on cazy sequences\n";
-    $cmd1 = "ln -s /usr/local/dbcan/all.hmm.ps.len .; ";
+    #$cmd1 = "ln -s /usr/local/dbcan/all.hmm.ps.len .; ";
     $cmd2 = "ln -s /usr/local/dbcan/hmmscan-parser.sh .; ";
-    &run_cmd($cmd1, $cmd2);
-    $cmd1 = "";
+    #&run_cmd($cmd1, $cmd2);
+    &run_cmd($cmd2);
+    #$cmd1 = "";
     $cmd2 = "";
     print "Links created, proceed with dbcan\n\n";
 
