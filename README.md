@@ -1,4 +1,7 @@
 # SACCHARIS
+
+NOTE: This is Saccharis 1.0 -- there is a new version 2.0 Located [Here](https://github.com/saccharis/SACCHARIS_2)
+
 Sequence Analysis and Clustering of CarboHydrate Active enzymes for Rapid Informed prediction of Specificity (SACCHARIS), is a PERL based pipeline designed to improve functional predictions of uncharacterized sequences for any CAZyme or CBM family currently maintained on the CAZy website or within user-defined datasets.
 # Citation
 When using SACCHARIS please site the following paper:
